@@ -4,11 +4,10 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour
 {
-    public Controller2D playerController;
-    public Vector2 size;
-    public float vertOffset;
-
-    FocusArea focusArea;
+    public Controller2D     playerController;
+    public Vector2          size;
+    public float            vertOffset;
+    private FocusArea       focusArea;
 
     private void Start()
     {
@@ -19,9 +18,8 @@ public class CameraController : MonoBehaviour
     {
         focusArea.Update(playerController.GetComponent<BoxCollider2D>().bounds);
 
-        Vector2 focusPos = focusArea.center + Vector2.up * vertOffset;
-
-        transform.position = (Vector3)focusPos + Vector3.forward * -10;
+        Vector2 focusPos    = focusArea.center + Vector2.up * vertOffset;
+        transform.position  = (Vector3)focusPos + Vector3.forward * -10;
     }
 
     private void OnDrawGizmos()

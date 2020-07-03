@@ -4,23 +4,23 @@ using System.Collections.Generic;
 
 public class PlatformController : RaycastController
 {
-    public LayerMask passengerMask;
+    public LayerMask    passengerMask;
 
-    public Vector3[] localWaypoints;
-    Vector3[] globalWaypoints;
+    public Vector3[]    localWaypoints;
+    private Vector3[]   globalWaypoints;
 
-    public float speed;
-    public bool cyclic;
-    public float waitTime;
+    public float        speed;
+    public bool         cyclic;
+    public float        waitTime;
     [Range(0, 3)]
-    public float easeAmount;
+    public float        easeAmount;
 
-    int fromWaypointIndex;
-    float percentBetweenWaypoints;
-    float nextMoveTime;
+    int         fromWaypointIndex;
+    float       percentBetweenWaypoints;
+    float       nextMoveTime;
 
-    List<PassengerMovement> passengerMovementList;
-    Dictionary<Transform, Controller2D> passengerDictionary = new Dictionary<Transform, Controller2D>();
+    private List<PassengerMovement>             passengerMovementList;
+    private Dictionary<Transform, Controller2D> passengerDictionary = new Dictionary<Transform, Controller2D>();
 
     public override void Start()
     {
@@ -62,8 +62,10 @@ public class PlatformController : RaycastController
         fromWaypointIndex %= globalWaypoints.Length;
         int toWaypointIndex = (fromWaypointIndex + 1) % globalWaypoints.Length;
         float distanceBetweenWaypoints = Vector3.Distance(globalWaypoints[fromWaypointIndex], globalWaypoints[toWaypointIndex]);
+
         percentBetweenWaypoints += Time.deltaTime * speed / distanceBetweenWaypoints;
         percentBetweenWaypoints = Mathf.Clamp01(percentBetweenWaypoints);
+
         float easedPercentBetweenWaypoints = Ease(percentBetweenWaypoints);
 
         Vector3 newPos = Vector3.Lerp(globalWaypoints[fromWaypointIndex], globalWaypoints[toWaypointIndex], easedPercentBetweenWaypoints);

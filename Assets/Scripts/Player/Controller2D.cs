@@ -4,9 +4,9 @@ using UnityEngine;
 
 public class Controller2D : RaycastController
 {
-    float maxClimbAngle = 80;
-    float maxDescendAngle = 80;
-    public CollisionsInfo collisions;
+    private float           maxClimbAngle = 80;
+    private float           maxDescendAngle = 80;
+    public CollisionsInfo   collisions;       
 
     public override void Start()
     {

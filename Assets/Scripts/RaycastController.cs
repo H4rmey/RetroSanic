@@ -32,10 +32,10 @@ public class RaycastController : MonoBehaviour
         Bounds bounds = collider.bounds;
         bounds.Expand(skinWidth * -2);
 
-        raycastOrigins.topLeft = new Vector2(bounds.min.x, bounds.max.y);
-        raycastOrigins.topRight = new Vector2(bounds.max.x, bounds.max.y);
-        raycastOrigins.bottomLeft = new Vector2(bounds.min.x, bounds.min.y);
-        raycastOrigins.bottomRight = new Vector2(bounds.max.x, bounds.min.y);
+        raycastOrigins.topLeft      = new Vector2(bounds.min.x, bounds.max.y);
+        raycastOrigins.topRight     = new Vector2(bounds.max.x, bounds.max.y);
+        raycastOrigins.bottomLeft   = new Vector2(bounds.min.x, bounds.min.y);
+        raycastOrigins.bottomRight  = new Vector2(bounds.max.x, bounds.min.y);
     }
 
     public void CalcRaySpacing()
@@ -43,11 +43,10 @@ public class RaycastController : MonoBehaviour
         Bounds bounds = collider.bounds;
         bounds.Expand(skinWidth * -2);
 
-        horiRayCount = Mathf.Clamp(horiRayCount, 2, int.MaxValue);
-        vertRayCount = Mathf.Clamp(horiRayCount, 2, int.MaxValue);
-
-        horiRaySpacing = bounds.size.y / (horiRayCount - 1);
-        vertRaySpacing = bounds.size.x / (vertRayCount - 1);
+        horiRayCount    = Mathf.Clamp(horiRayCount, 2, int.MaxValue);
+        vertRayCount    = Mathf.Clamp(horiRayCount, 2, int.MaxValue);
+        horiRaySpacing  = bounds.size.y / (horiRayCount - 1);
+        vertRaySpacing  = bounds.size.x / (vertRayCount - 1);
     }
 
     public struct RaycastOrigins
