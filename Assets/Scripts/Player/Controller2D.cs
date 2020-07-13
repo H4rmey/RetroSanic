@@ -6,12 +6,16 @@ public class Controller2D : RaycastController
 {
     private float           maxClimbAngle = 80;
     private float           maxDescendAngle = 80;
-    public CollisionsInfo   collisions;       
+    public CollisionsInfo   collisions;
+    [HideInInspector]
+    public InputHandler     inputHandler;
 
     public override void Start()
     {
         base.Start();
         collisions.faceDir = 1;
+
+        inputHandler = GameObject.Find("SGameManager").GetComponent<InputHandler>();
     }
 
     public void Move(Vector3 velocity, bool isStandingOnPlatform = false)
@@ -36,6 +40,7 @@ public class Controller2D : RaycastController
         if (isStandingOnPlatform)
         {
             collisions.below = true;
+            collisions.vertical = -1;
         }
     }
 
@@ -92,8 +97,9 @@ public class Controller2D : RaycastController
                         velocity.y = Mathf.Tan(collisions.slopeAngle * Mathf.Deg2Rad) * Mathf.Abs(velocity.x);
                     }
 
-                    collisions.left = dirX == -1;
-                    collisions.right = dirX == 1;
+                    collisions.left         = dirX == -1;
+                    collisions.right        = dirX == 1;
+                    collisions.horizontal   = (int)dirX;
                 }
             }
         }
@@ -122,8 +128,9 @@ public class Controller2D : RaycastController
                     velocity.x = Mathf.Abs(velocity.y) / Mathf.Tan(collisions.slopeAngle * Mathf.Deg2Rad) * Mathf.Sign(velocity.x);
                 }
 
-                collisions.below = dirY == -1;
-                collisions.above = dirY == 1;
+                collisions.below    = dirY == -1;
+                collisions.above    = dirY == 1;
+                collisions.vertical = (int)dirY;
             }
         }
 
@@ -156,7 +163,8 @@ public class Controller2D : RaycastController
             velocity.y = climbVelocityY;
             velocity.x = Mathf.Cos(slopeAngle * Mathf.Deg2Rad) * moveDist * Mathf.Sign(velocity.x);
 
-            collisions.below = true;
+            collisions.below        = true;
+            collisions.vertical     = -1;
             collisions.climbinSlope = true;
             collisions.slopeAngle = slopeAngle;
         }
@@ -181,9 +189,10 @@ public class Controller2D : RaycastController
                         velocity.x = Mathf.Cos(slopeAngle * Mathf.Deg2Rad) * moveDist * Mathf.Sign(velocity.x);
                         velocity.y -= descendVelocityY;
 
-                        collisions.below = true;
-                        collisions.descendingSlope = true;
-                        collisions.slopeAngle = slopeAngle;
+                        collisions.below            = true;
+                        collisions.vertical         = -1;
+                        collisions.descendingSlope  = true;
+                        collisions.slopeAngle       = slopeAngle;
                     }
                 }
             }
@@ -194,6 +203,7 @@ public class Controller2D : RaycastController
     {
         public bool above, below;
         public bool left, right;
+        public int horizontal, vertical;
 
         public bool climbinSlope;
         public bool descendingSlope;
