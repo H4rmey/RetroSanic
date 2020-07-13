@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class Controller2D : RaycastController
 {
-    private float           maxClimbAngle = 80;
-    private float           maxDescendAngle = 80;
+    private float           maxClimbAngle = 45;
+    private float           maxDescendAngle = 45;
     public CollisionsInfo   collisions;
     [HideInInspector]
     public InputHandler     inputHandler;
@@ -23,6 +23,9 @@ public class Controller2D : RaycastController
         UpdateRaycastOrigins();
         collisions.Reset();
         collisions.velocityOld = velocity;
+
+        if (velocity.x > -0.001 && velocity.x < 0.001)
+            velocity.x = 0;
 
         if (velocity.x != 0)
             collisions.faceDir = (int)Mathf.Sign(velocity.x);
@@ -42,6 +45,8 @@ public class Controller2D : RaycastController
             collisions.below = true;
             collisions.vertical = -1;
         }
+
+        //Debug.Log(velocity.x);
     }
 
     void HoriCollisions(ref Vector3 velocity)
@@ -173,7 +178,9 @@ public class Controller2D : RaycastController
     void DescendSlope(ref Vector3 velocity)
     {
         float dirX = Mathf.Sign(velocity.x);
+
         Vector2 rayOrigin = ((dirX == -1) ? raycastOrigins.bottomRight : raycastOrigins.bottomLeft);
+
         RaycastHit2D hit = Physics2D.Raycast(rayOrigin, -Vector2.up, Mathf.Infinity, colMask);
         if (hit)
         {

@@ -5,77 +5,30 @@ using UnityEngine;
 public class CameraController : MonoBehaviour
 {
     public Controller2D     playerController;
-    public Vector2          size;
-    public float            vertOffset;
-    private FocusArea       focusArea;
+
+    public float            overShotMagnitude;
+    public float            overShotTime;
+
+    private Vector3         previousPosition;
+    private Vector3         velocity;
 
     private void Start()
     {
-        focusArea = new FocusArea(playerController.GetComponent<BoxCollider2D>().bounds, size);
     }
 
     private void LateUpdate()
     {
-        focusArea.Update(playerController.GetComponent<BoxCollider2D>().bounds);
+        velocity = (transform.position - previousPosition);
+        previousPosition = transform.position;
+        transform.position = Vector3.SmoothDamp(transform.position, playerController.transform.position, ref velocity, overShotTime);
+        transform.position = new Vector3(transform.position.x, transform.position.y, -10);
 
-        Vector2 focusPos    = focusArea.center + Vector2.up * vertOffset;
-        transform.position  = (Vector3)focusPos + Vector3.forward * -10;
+        //Debug.Log(velocity);
     }
 
     private void OnDrawGizmos()
     {
         Gizmos.color = Color.red * 0.5f;
-        Gizmos.DrawCube(focusArea.center, size);
-    }
-
-    public struct FocusArea
-    {
-        float left, right, top, bottom;
-        public Vector2 center;
-
-        public FocusArea(Bounds targetBounds, Vector2 size)
-        {
-            left = targetBounds.center.x - size.x / 2;
-            right = targetBounds.center.x + size.x / 2;
-            bottom = targetBounds.min.y;
-            top = targetBounds.min.y + size.y;
-
-            center = new Vector2((right + left) / 2, (top + bottom) / 2);
-        }
-
-        public void Update(Bounds bounds)
-        {
-            float shiftX = 0;
-
-            if (bounds.min.x < left)
-            {
-                shiftX = left - bounds.min.x;
-            }
-            else if (bounds.max.x > right)
-            {
-                shiftX = right - bounds.max.x;
-            }
-
-            left -= shiftX;
-            right -= shiftX;
-
-
-
-            float shiftY = 0;
-
-            if (bounds.min.y < bottom)
-            {
-                shiftY = bottom - bounds.min.y;
-            }
-            else if (bounds.max.y > top)
-            {
-                shiftY = top - bounds.max.y;
-            }
-
-            bottom -= shiftY;
-            top -= shiftY;
-
-            center = new Vector2((right + left) / 2, (top + bottom) / 2);
-        }
+        Gizmos.DrawSphere(playerController.transform.position, overShotMagnitude);
     }
 }

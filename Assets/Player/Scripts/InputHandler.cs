@@ -9,6 +9,13 @@ public struct Inputs
     public bool pJump;
     public bool pInteract;
 
+
+    public bool pUpPressed, pDownPressed;
+    public bool pLeftPressed, pRightPressed;
+
+    public bool pJumpPressed;
+    public bool pInteractPressed;
+
     public int pHorizontal, pVertical;
 }
 
@@ -33,6 +40,13 @@ public class InputHandler : MonoBehaviour
         input.pRight    = Input.GetKey(rightKey);
         input.pJump     = Input.GetKey(jumpKey);
         input.pInteract = Input.GetKey(interactKey);
+        
+        input.pUpPressed        = Input.GetKeyDown(upKey);
+        input.pDownPressed      = Input.GetKeyDown(downKey);
+        input.pLeftPressed      = Input.GetKeyDown(leftKey);
+        input.pRightPressed     = Input.GetKeyDown(rightKey);
+        input.pJumpPressed      = Input.GetKeyDown(jumpKey);
+        input.pInteractPressed  = Input.GetKeyDown(interactKey);
 
         if (Input.GetKey(upKey))            input.pVertical     = -1;
         else if (Input.GetKey(downKey))     input.pVertical     =  1;
