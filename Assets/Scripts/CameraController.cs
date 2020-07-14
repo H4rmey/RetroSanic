@@ -26,9 +26,9 @@ public class CameraController : MonoBehaviour
         //Debug.Log(velocity);
     }
 
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red * 0.5f;
-        Gizmos.DrawSphere(playerController.transform.position, overShotMagnitude);
-    }
+    //private void OnDrawGizmos()
+    //{
+    //    Gizmos.color = Color.red * 0.5f;
+    //    Gizmos.DrawSphere(playerController.transform.position, overShotMagnitude);
+    //}
 }

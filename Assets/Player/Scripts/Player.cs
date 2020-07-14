@@ -44,6 +44,11 @@ public class Player : MonoBehaviour
     [HideInInspector]
     public bool        isWallSliding       = false;
 
+    [Header("Attacka")]
+    public float        attackRange     = 10;
+    public float        attackForce     = 5;
+    public float        attackContinue  = 2;
+
     private float       gravity;
     private float       jumpForce;
 
@@ -92,11 +97,13 @@ public class Player : MonoBehaviour
         }
         if (!isWallSliding) //DO NOT MAKE ELSE IF, WILL BREAK RELEASING FROM WALLS <:o
         {
-            if (input.pJump && controller.collisions.below)
+            if (input.pJump)
                 Jump(new Vector2(0, jumpForce));
 
             velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocity.x, ref velocitySmoothing.x, smoothingFactor.x);
         }
+
+        if (input.pInteractPressed && controller.collisions.below) StartCoroutine("Attack");
 
         //final checks UwU
         if (controller.collisions.above)
@@ -134,7 +141,7 @@ public class Player : MonoBehaviour
         smoothingFactor.y   = smoothingWallSlidingY;
     }
 
-    private UnityAction Jump(Vector2 aDirection)
+    private void Jump(Vector2 aDirection)
     {
         JumpTrigger.Invoke();
 
@@ -144,17 +151,73 @@ public class Player : MonoBehaviour
             velocity.y = aDirection.y;
         else
             velocity = aDirection;
-
-        return null;
     }
 
     public bool IsAirborne()
     {
-        if (!controller.collisions.below    &&
-            !controller.collisions.left     &&
-            !controller.collisions.right)
+        if (controller.collisions.below    ||
+            controller.collisions.left     ||
+            controller.collisions.right)
+        {
+            return false;
+        }
+        else
+        {
             return true;
+        }
+    }
 
-        return false;
+    private IEnumerator Attack()
+    {
+        Collider2D[] targets        = Physics2D.OverlapCircleAll(transform.position, attackRange, controller.colMask);
+        Collider2D targetCollider   = GetClosestEnemy(targets);
+        Vector3 target              = targetCollider.transform.position;
+        Vector3 direction           = (target - transform.position);
+        float distance              = attackRange;
+
+        while (distance > attackContinue && targetCollider != null)
+        {
+            velocity.x = (target.x - transform.position.x) * attackForce;
+            velocity.y = (target.y - transform.position.y) * attackForce;
+
+            controller.Move(velocity * Time.deltaTime);
+
+            distance = (target - transform.position).sqrMagnitude;
+            yield return null;
+        }
+
+        Destroy(targetCollider.transform.gameObject);
+        Jump(new Vector2((target - transform.position).x * jumpForce, -(target - transform.position).y * jumpForce));
+
+        yield return null;
+    }
+
+    private Collider2D GetClosestEnemy(Collider2D[] aEnemies)
+    {
+        Collider2D bestTarget = null;
+        float closestDistanceSqr = Mathf.Infinity;
+        Vector3 currentPosition = transform.position;
+
+        foreach (Collider2D enemy in aEnemies)
+        {
+            Transform potentialTarget = enemy.transform;
+
+            Vector3 directionToTarget = potentialTarget.position - currentPosition;
+            float dSqrToTarget = directionToTarget.sqrMagnitude;
+
+            if (dSqrToTarget < closestDistanceSqr && potentialTarget.tag == "Enemy")
+            {
+                closestDistanceSqr = dSqrToTarget;
+                bestTarget = enemy;
+            }
+        }
+
+        return bestTarget;
+    }
+
+    void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red * 0.5f;
+        Gizmos.DrawSphere(this.transform.position, attackRange);
     }
 }
