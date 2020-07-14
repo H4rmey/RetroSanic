@@ -268,11 +268,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   jumpHeight: 5
   jumpAccend: 0.4
-  smoothingAirborneX: 0.4
+  smoothingAirborneX: 0.22
   smoothingGroundedX: 0.1
-  smoothingAriborneY: 0.2
+  smoothingAirborneY: 0.1
   moveSpeed: 10
-  wallSlideSpeedMax: 2.5
+  wallSlideSpeed: 3
+  slideSmoothing: 0.75
   velocity: {x: 0, y: 0, z: 0}
 --- !u!212 &111006036
 SpriteRenderer:
@@ -332,7 +333,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 111006032}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.38, y: 1.13, z: -1}
+  m_LocalPosition: {x: 27.2, y: 0.3, z: -1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -486,7 +487,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   playerController: {fileID: 111006033}
   overShotMagnitude: 3
-  overShotTime: 0.05
+  overShotTime: 0.005
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0
@@ -781,8 +782,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 770827746}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -11, y: 4.35, z: -0.86635005}
-  m_LocalScale: {x: 6.6642375, y: 25.292267, z: 1}
+  m_LocalPosition: {x: -11, y: 4.329, z: -0.86635005}
+  m_LocalScale: {x: 6.6642375, y: 25.334818, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 7
