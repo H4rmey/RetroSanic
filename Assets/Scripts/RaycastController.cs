@@ -7,9 +7,9 @@ public class RaycastController : MonoBehaviour
 {
     public LayerMask colMask;
     public const float skinWidth = .015f;
+
     public int horiRayCount = 4;
     public int vertRayCount = 4;
-
     [HideInInspector]
     public float horiRaySpacing;
     [HideInInspector]
@@ -19,6 +19,8 @@ public class RaycastController : MonoBehaviour
     public BoxCollider2D collider;
     [HideInInspector]
     public RaycastOrigins raycastOrigins;
+    [HideInInspector]
+    public Bounds bounds;
 
     // Start is called before the first frame update
     public virtual void Start()
@@ -27,9 +29,9 @@ public class RaycastController : MonoBehaviour
         CalcRaySpacing();
     }
 
-    public void UpdateRaycastOrigins()
+    public virtual void UpdateRaycastOrigins()
     {
-        Bounds bounds = collider.bounds;
+        bounds = collider.bounds;
         bounds.Expand(skinWidth * -2);
 
         raycastOrigins.topLeft      = new Vector2(bounds.min.x, bounds.max.y);
@@ -38,9 +40,9 @@ public class RaycastController : MonoBehaviour
         raycastOrigins.bottomRight  = new Vector2(bounds.max.x, bounds.min.y);
     }
 
-    public void CalcRaySpacing()
+    public virtual void CalcRaySpacing()
     {
-        Bounds bounds = collider.bounds;
+        bounds = collider.bounds;
         bounds.Expand(skinWidth * -2);
 
         horiRayCount    = Mathf.Clamp(horiRayCount, 2, int.MaxValue);
@@ -53,5 +55,6 @@ public class RaycastController : MonoBehaviour
     {
         public Vector2 topLeft, topRight;
         public Vector2 bottomLeft, bottomRight;
+        public Vector2 midLeft, midRight;
     }
 }

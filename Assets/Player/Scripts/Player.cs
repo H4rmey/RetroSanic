@@ -60,12 +60,16 @@ public class Player : MonoBehaviour
 
     [HideInInspector]
     public Controller2D controller;
+    [HideInInspector]
+    public SurroundingCheck surrounding;
 
     public UnityEvent JumpTrigger;
 
     void Awake()
     {
         controller  = GetComponent<Controller2D>();
+        surrounding = GetComponent<SurroundingCheck>();
+
         gravity     = -(2 * jumpHeight) / Mathf.Pow(jumpAccend, 2);
         jumpForce   = Mathf.Abs(gravity * jumpAccend);
 
@@ -97,13 +101,13 @@ public class Player : MonoBehaviour
         }
         if (!isWallSliding) //DO NOT MAKE ELSE IF, WILL BREAK RELEASING FROM WALLS <:o
         {
-            if (input.pJump)
+            if (input.pJumpPressed)
                 Jump(new Vector2(0, jumpForce));
 
             velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocity.x, ref velocitySmoothing.x, smoothingFactor.x);
         }
 
-        if (input.pInteractPressed && controller.collisions.below) StartCoroutine("Attack");
+        if (input.pInteractPressed && !surrounding.collisions.bottom) StartCoroutine("Attack");
 
         //final checks UwU
         if (controller.collisions.above)
@@ -155,9 +159,9 @@ public class Player : MonoBehaviour
 
     public bool IsAirborne()
     {
-        if (controller.collisions.below    ||
-            controller.collisions.left     ||
-            controller.collisions.right)
+        if (surrounding.collisions.bottom       ||
+            surrounding.collisions.left         ||
+            surrounding.collisions.right)
         {
             return false;
         }

@@ -202,6 +202,7 @@ GameObject:
   - component: {fileID: 111006033}
   - component: {fileID: 111006037}
   - component: {fileID: 111006039}
+  - component: {fileID: 111006040}
   m_Layer: 9
   m_Name: 'Player '
   m_TagString: Untagged
@@ -229,6 +230,9 @@ MonoBehaviour:
   horiRaySpacing: 0
   vertRaySpacing: 0
   collider: {fileID: 0}
+  bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
   inputHandler: {fileID: 0}
 --- !u!61 &111006034
 BoxCollider2D:
@@ -277,11 +281,12 @@ MonoBehaviour:
   moveSpeed: 10
   wallSlideSpeed: 3
   isWallSliding: 0
-  attackRange: 10
+  attackRange: 8
   attackForce: 5
   attackContinue: 3
   velocity: {x: 0, y: 0, z: 0}
   controller: {fileID: 0}
+  surrounding: {fileID: 0}
   JumpTrigger:
     m_PersistentCalls:
       m_Calls:
@@ -391,6 +396,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5b64f76c3ece081448269365bb700200, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &111006040
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 111006032}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0ae1814cdbfcac48a18001b6834993c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  colMask:
+    serializedVersion: 2
+    m_Bits: 256
+  horiRayCount: 30
+  vertRayCount: 3
+  horiRaySpacing: 0
+  vertRaySpacing: 0
+  collider: {fileID: 0}
+  bounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
+  raycastRange: 0.3
 --- !u!1 &158639286
 GameObject:
   m_ObjectHideFlags: 0
@@ -454,7 +483,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 7072f70eb8367ea4faef48d97a75bc58, type: 2}
+  - {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -799,7 +828,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 7072f70eb8367ea4faef48d97a75bc58, type: 2}
+  - {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -905,7 +934,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 7072f70eb8367ea4faef48d97a75bc58, type: 2}
+  - {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -974,7 +1003,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 971982575}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.1, y: -1.65, z: -1.4173129}
+  m_LocalPosition: {x: -10.03, y: -1.58, z: -1.4173129}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1119,7 +1148,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 7072f70eb8367ea4faef48d97a75bc58, type: 2}
+  - {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1225,7 +1254,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 7072f70eb8367ea4faef48d97a75bc58, type: 2}
+  - {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1596,7 +1625,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 7072f70eb8367ea4faef48d97a75bc58, type: 2}
+  - {fileID: 10306, guid: 0000000000000000f000000000000000, type: 0}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1849,7 +1878,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1847304626}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -10.3, y: -1.65, z: -1.4173129}
+  m_LocalPosition: {x: 0.05, y: -1.69, z: -1.4173129}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}

@@ -74,9 +74,6 @@ public class Controller2D : RaycastController
                     continue;
                 }
 
-                collisions.otherGameObjectHorizontal    = hit.transform.gameObject;
-                collisions.otherGameObject              = hit.transform.gameObject;
-
                 float slopeAngle = Vector2.Angle(hit.normal, Vector2.up);
                 if (i==0 && slopeAngle <= maxClimbAngle)
                 {
@@ -128,9 +125,6 @@ public class Controller2D : RaycastController
 
             if (hit)
             {
-                collisions.otherGameObjectVertical  = hit.transform.gameObject;
-                collisions.otherGameObject          = hit.transform.gameObject;
-
                 velocity.y = (hit.distance - skinWidth) * dirY;
                 raylen = hit.distance;
 
@@ -211,29 +205,36 @@ public class Controller2D : RaycastController
             }
         }
     }
+      
+}
 
-    public struct CollisionsInfo
+public struct CollisionsInfo
+{
+    public bool     above, below;
+    public bool     left, right;
+    public int      horizontal, vertical;
+
+    public bool     climbinSlope;
+    public bool     descendingSlope;
+    public float    slopeAngle, slopeAngleOld;
+    public Vector3  velocityOld;
+    public int      faceDir;
+
+    public List<GameObject> otherGameObject;
+
+    public void Reset()
     {
-        public bool above, below;
-        public bool left, right;
-        public int horizontal, vertical;
+        above = below = false;
+        left = right = false;
+        climbinSlope = false;
+        descendingSlope = false;
 
-        public bool climbinSlope;
-        public bool descendingSlope;
-        public float slopeAngle, slopeAngleOld;
-        public Vector3 velocityOld;
-        public int faceDir;
-        public GameObject otherGameObjectHorizontal, otherGameObjectVertical, otherGameObject;
-
-        public void Reset()
-        {
-            above = below = false;
-            left = right = false;
-            climbinSlope = false;
-            descendingSlope = false;
-
-            slopeAngleOld = slopeAngle;
-            slopeAngle = 0;
-        }
+        slopeAngleOld = slopeAngle;
+        slopeAngle = 0;
     }
+
+    public bool topLeft, topRight;
+    public bool midLeft, midRight;
+    public bool botLeft, botRight;
+    public bool top, bottom;
 }
