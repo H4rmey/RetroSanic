@@ -63,10 +63,6 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        animator.SetBool("AAirhang", IsAirborne());
-        animator.SetBool("IsGrounded", !IsAirborne());
-        if (input.pHorizontal == 0) input.pHorizontal = 1;
-        transform.localScale = new Vector3(input.pHorizontal, 1, 1);
 
         //get the user input
         input = controller.inputHandler.input;
@@ -119,7 +115,6 @@ public class Player : MonoBehaviour
             //do a jump :)
             velocity.x = jumpForce * -controller.collisions.horizontal;
             velocity.y = jumpForce;
-            animator.SetTrigger("AJumpTrigger");
         }
 
         //release from walls
@@ -143,7 +138,6 @@ public class Player : MonoBehaviour
         {
             //do a jump :D
             velocity.y = jumpForce;
-            animator.SetTrigger("AJumpTrigger");
         }
     }
 
