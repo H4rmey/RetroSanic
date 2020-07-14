@@ -65,6 +65,7 @@
     <Compile Include="Assets\Enemies\GenericEnemy.cs" />
     <Compile Include="Assets\Player\Scripts\InputHandler.cs" />
     <Compile Include="Assets\Player\Scripts\Player.cs" />
+    <Compile Include="Assets\Player\Scripts\PlayerAnimationHandler.cs" />
     <Compile Include="Assets\Scripts\CameraController.cs" />
     <Compile Include="Assets\Scripts\Controller2D.cs" />
     <Compile Include="Assets\Scripts\PlatformController.cs" />

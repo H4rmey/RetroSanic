@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(Controller2D))]
@@ -20,9 +21,8 @@ public class Player : MonoBehaviour
     ///     isSliding
     /// </summary>
 
-    public Animator animator;
-
-    private Inputs input;
+    [HideInInspector]
+    public Inputs input;
 
     [Header("Jumping")]
     public float    jumpHeight = 3;
@@ -41,7 +41,8 @@ public class Player : MonoBehaviour
 
     [Header("WallJumping")]
     public float        wallSlideSpeed      = 3;
-    private bool        isWallSliding       = false;
+    [HideInInspector]
+    public bool        isWallSliding       = false;
 
     private float       gravity;
     private float       jumpForce;
@@ -52,18 +53,22 @@ public class Player : MonoBehaviour
     [HideInInspector]
     public Vector3      velocity;
 
-    private Controller2D controller;
+    [HideInInspector]
+    public Controller2D controller;
+
+    public UnityEvent JumpTrigger;
 
     void Awake()
     {
         controller  = GetComponent<Controller2D>();
         gravity     = -(2 * jumpHeight) / Mathf.Pow(jumpAccend, 2);
         jumpForce   = Mathf.Abs(gravity * jumpAccend);
+
+        input.pHorizontal = 1;
     }
 
     private void Update()
     {
-
         //get the user input
         input = controller.inputHandler.input;
 
@@ -87,7 +92,9 @@ public class Player : MonoBehaviour
         }
         if (!isWallSliding) //DO NOT MAKE ELSE IF, WILL BREAK RELEASING FROM WALLS <:o
         {
-            Jump();
+            if (input.pJump && controller.collisions.below)
+                Jump(new Vector2(0, jumpForce));
+
             velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocity.x, ref velocitySmoothing.x, smoothingFactor.x);
         }
 
@@ -95,7 +102,7 @@ public class Player : MonoBehaviour
         if (controller.collisions.above)
             velocity.y = 0;
 
-        if (!isWallSliding)
+        if (input.pDown || IsAirborne())
             velocity.y += gravity * Time.deltaTime;
 
         //apply to object
@@ -104,17 +111,12 @@ public class Player : MonoBehaviour
 
     private void WallSliding()
     {
-        if (input.pDown || IsAirborne())
-        {
-            isWallSliding = false;
-        }
-        else if (input.pJump)
+        if (input.pJump)
         {
             isWallSliding = false;
 
             //do a jump :)
-            velocity.x = jumpForce * -controller.collisions.horizontal;
-            velocity.y = jumpForce;
+            Jump(new Vector2(jumpForce * -controller.collisions.horizontal, jumpForce));
         }
 
         //release from walls
@@ -132,16 +134,21 @@ public class Player : MonoBehaviour
         smoothingFactor.y   = smoothingWallSlidingY;
     }
 
-    private void Jump()
+    private UnityAction Jump(Vector2 aDirection)
     {
-        if (input.pJump && controller.collisions.below)
-        {
-            //do a jump :D
-            velocity.y = jumpForce;
-        }
+        JumpTrigger.Invoke();
+
+        if (aDirection.y == 0 && aDirection.x != 0)
+            velocity.x = aDirection.x;
+        else if (aDirection.x == 0 && aDirection.y != 0)
+            velocity.y = aDirection.y;
+        else
+            velocity = aDirection;
+
+        return null;
     }
 
-    private bool IsAirborne()
+    public bool IsAirborne()
     {
         if (!controller.collisions.below    &&
             !controller.collisions.left     &&
