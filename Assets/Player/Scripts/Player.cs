@@ -25,24 +25,28 @@ public class Player : MonoBehaviour
     [Header("Jumping")]
     public float    jumpHeight = 3;
     public float    jumpAccend = .4f;
+
+
+    [Header("Smooth Smooth, Cha Cha")]
     public float    smoothingAirborneX = .4f;
     public float    smoothingGroundedX = .1f;
-    public float    smoothingAirborneY = .1f;
+    public float    smoothingWallSlidingY = .1f;
+    public float    smoothingSlidingX = .75f;
 
     [Header("Movement")]
     public float    moveSpeed = 10;
     private bool    isSliding = false;
 
     [Header("WallJumping")]
-    public float        wallSlideSpeed   = 3;
+    public float        wallSlideSpeed      = 3;
     private bool        isWallSliding       = false;
-    public float        slideSmoothing      = 2;
-    private float       slideXSmoothing;
 
     private float       gravity;
     private float       jumpForce;
-    private float       velocityXSmoothing;
-    private float       velocityYSmoothing;
+
+    private Vector2     smoothingFactor;
+    private Vector2     targetVelocity;
+    private Vector2     velocitySmoothing;
     [HideInInspector]
     public Vector3      velocity;
 
@@ -60,62 +64,40 @@ public class Player : MonoBehaviour
         //get the user input
         input = controller.inputHandler.input;
 
-        //reset set the velocity to zero
+        //reset set the velocity to zero. when grounded
         if (controller.collisions.below)
             velocity.y = 0;
 
-        //smooth the input x speed
-        isSliding = input.pDown;
-        Movement();
 
-        //make function
-        if (input.pJump && !isWallSliding && controller.collisions.below)
-        {
-            velocity.y = jumpForce;
-        }
+        //get/set base parameters
+        targetVelocity.x    = moveSpeed * input.pHorizontal;
+        smoothingFactor.x   = (IsAirborne()) ? smoothingAirborneX : smoothingGroundedX;
 
-        //make function
-        if (controller.collisions.left || controller.collisions.right)
-        {
-            isWallSliding = true;
-        }
+        isSliding           = (input.pDown && !IsAirborne());
+        isWallSliding       = (controller.collisions.left || controller.collisions.right);
 
+        //handle that shit
         if (isWallSliding)
         {
             WallSliding();
+            velocity.y = Mathf.SmoothDamp(velocity.y, targetVelocity.y, ref velocitySmoothing.y, smoothingFactor.y);
         }
-               
+        if (!isWallSliding) //DO NOT MAKE ELSE IF, WILL BREAK RELEASING FROM WALLS <:o
+        {
+            Jump();
+            velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocity.x, ref velocitySmoothing.x, smoothingFactor.x);
+        }
 
+        //final checks UwU
         if (controller.collisions.above)
             velocity.y = 0;
 
         if (!isWallSliding)
             velocity.y += gravity * Time.deltaTime;
 
+        //apply to object
         controller.Move(velocity * Time.deltaTime);
     }
-
-    private void Movement()
-    {
-        if (!isSliding)
-        {
-            slideXSmoothing = 0;
-
-            float targetVelocityX = moveSpeed * input.pHorizontal;
-            if (IsAirborne())
-            {
-                velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, smoothingAirborneX);
-            }
-            else
-            {
-                velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocityX, ref velocityXSmoothing, smoothingGroundedX);
-            }
-        }
-        else
-        {
-            velocity.x = Mathf.SmoothDamp(velocity.x, 0, ref slideXSmoothing, slideSmoothing);
-        }
-    } 
 
     private void WallSliding()
     {
@@ -127,12 +109,33 @@ public class Player : MonoBehaviour
         {
             isWallSliding = false;
 
+            //do a jump :)
             velocity.x = jumpForce * -controller.collisions.horizontal;
             velocity.y = jumpForce;
         }
 
-        float targetVelocityY = (input.pLeft || input.pRight) ? 0.0f : -wallSlideSpeed;
-        velocity.y = Mathf.SmoothDamp(velocity.y, targetVelocityY, ref velocityYSmoothing, smoothingAirborneY);
+        //release from walls
+        if (controller.collisions.left)
+        {
+            isWallSliding       = !input.pRight;
+            targetVelocity.y    = (input.pLeft) ? 0.0f : -wallSlideSpeed;
+        }
+        else if (controller.collisions.right)
+        {
+            isWallSliding       = !input.pLeft;
+            targetVelocity.y    = (input.pRight) ? 0.0f : -wallSlideSpeed;
+        }
+
+        smoothingFactor.y   = smoothingWallSlidingY;
+    }
+
+    private void Jump()
+    {
+        if (input.pJump && controller.collisions.below)
+        {
+            //do a jump :D
+            velocity.y = jumpForce;
+        }
     }
 
     private bool IsAirborne()
