@@ -231,6 +231,11 @@ public struct CollisionsInfo
 
         slopeAngleOld = slopeAngle;
         slopeAngle = 0;
+
+        topLeft = topRight = false;
+        midLeft = midRight = false;
+        botLeft = botRight = false;
+        top = bottom = false;
     }
 
     public bool topLeft, topRight;

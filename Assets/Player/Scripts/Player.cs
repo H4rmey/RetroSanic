@@ -7,20 +7,6 @@ using UnityEngine.UI;
 [RequireComponent(typeof(Controller2D))]
 public class Player : MonoBehaviour
 {
-    /// <summary>
-    /// Flags that are set and reset depending on the position/state of the player
-    /// 
-    /// CollisionInfo:
-    ///     above, below;
-    ///     left, right;
-    ///     climbinSlope;
-    ///     descendingSlope;
-    ///     
-    /// PlayerState:    
-    ///     isWallSliding   
-    ///     isSliding
-    /// </summary>
-
     [HideInInspector]
     public Inputs input;
 
@@ -65,6 +51,9 @@ public class Player : MonoBehaviour
 
     public UnityEvent JumpTrigger;
 
+    public enum STATE {WALKING, AIRBORNE, IDLE, WALLSLIDING, SLIDING};
+    public STATE state = STATE.IDLE;
+
     void Awake()
     {
         controller  = GetComponent<Controller2D>();
@@ -74,6 +63,7 @@ public class Player : MonoBehaviour
         jumpForce   = Mathf.Abs(gravity * jumpAccend);
 
         input.pHorizontal = 1;
+        state = STATE.IDLE;
     }
 
     private void Update()
@@ -85,46 +75,61 @@ public class Player : MonoBehaviour
         if (controller.collisions.below)
             velocity.y = 0;
 
+        //set state to idle if not input is present
+        if (input.pHorizontal == 0)
+            state = STATE.IDLE;
+        else
+            state = STATE.WALKING;
+
+        if (state != STATE.AIRBORNE && input.pDown)
+            state = STATE.SLIDING;
+
+        if (controller.collisions.left || controller.collisions.right)
+            state = STATE.WALLSLIDING;
+
+
+        if (!controller.collisions.below && !controller.collisions.left && !controller.collisions.right)
+            state = STATE.AIRBORNE;
 
         //get/set base parameters
-        targetVelocity.x    = moveSpeed * input.pHorizontal;
-        smoothingFactor.x   = (IsAirborne()) ? smoothingAirborneX : smoothingGroundedX;
-
-        isSliding           = (input.pDown && !IsAirborne());
-        isWallSliding       = (controller.collisions.left || controller.collisions.right);
+        targetVelocity.x = moveSpeed * input.pHorizontal;
+        smoothingFactor.x = (state == STATE.AIRBORNE) ? smoothingAirborneX : smoothingGroundedX;
 
         //handle that shit
-        if (isWallSliding)
+        if (state == STATE.WALLSLIDING)
         {
             WallSliding();
             velocity.y = Mathf.SmoothDamp(velocity.y, targetVelocity.y, ref velocitySmoothing.y, smoothingFactor.y);
         }
-        if (!isWallSliding) //DO NOT MAKE ELSE IF, WILL BREAK RELEASING FROM WALLS <:o
+
+        if (state != STATE.WALLSLIDING) //DO NOT MAKE ELSE IF, WILL BREAK RELEASING FROM WALLS <:o
         {
-            if (input.pJumpPressed)
+            if (input.pJumpPressed && surrounding.collisions.below)
                 Jump(new Vector2(0, jumpForce));
 
             velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocity.x, ref velocitySmoothing.x, smoothingFactor.x);
         }
 
-        if (input.pInteractPressed && !surrounding.collisions.bottom) StartCoroutine("Attack");
+        if (input.pInteractPressed && !controller.collisions.below) StartCoroutine("Attack");
 
         //final checks UwU
         if (controller.collisions.above)
             velocity.y = 0;
 
-        if (input.pDown || IsAirborne())
+        if (state != STATE.WALLSLIDING || input.pDown)
             velocity.y += gravity * Time.deltaTime;
 
         //apply to object
         controller.Move(velocity * Time.deltaTime);
+
+        Debug.Log(state);
     }
 
     private void WallSliding()
     {
         if (input.pJump)
         {
-            isWallSliding = false;
+            state = STATE.AIRBORNE;
 
             //do a jump :)
             Jump(new Vector2(jumpForce * -controller.collisions.horizontal, jumpForce));
@@ -133,12 +138,14 @@ public class Player : MonoBehaviour
         //release from walls
         if (controller.collisions.left)
         {
-            isWallSliding       = !input.pRight;
-            targetVelocity.y    = (input.pLeft) ? 0.0f : -wallSlideSpeed;
+            if (input.pRight)
+                state = STATE.AIRBORNE;
+            targetVelocity.y = (input.pLeft) ? 0.0f : -wallSlideSpeed;
         }
-        else if (controller.collisions.right)
+        if (controller.collisions.right)
         {
-            isWallSliding       = !input.pLeft;
+            if (input.pLeft)
+                state = STATE.AIRBORNE;
             targetVelocity.y    = (input.pRight) ? 0.0f : -wallSlideSpeed;
         }
 
@@ -155,20 +162,6 @@ public class Player : MonoBehaviour
             velocity.y = aDirection.y;
         else
             velocity = aDirection;
-    }
-
-    public bool IsAirborne()
-    {
-        if (surrounding.collisions.bottom       ||
-            surrounding.collisions.left         ||
-            surrounding.collisions.right)
-        {
-            return false;
-        }
-        else
-        {
-            return true;
-        }
     }
 
     private IEnumerator Attack()

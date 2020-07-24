@@ -26,8 +26,8 @@ public class PlayerAnimationHandler : MonoBehaviour
             direction = faceDirectionOld;
         player.transform.localScale = new Vector3(direction, 1, 1);
 
-        animator.SetBool("IsWallSliding",   player.isWallSliding);
-        animator.SetBool("IsAirBorne",      (player.IsAirborne() && (player.velocity.y < 0)));
+        animator.SetBool("IsWallSliding",   player.state == Player.STATE.WALLSLIDING);
+        animator.SetBool("IsAirBorne",      (player.state == Player.STATE.AIRBORNE && (player.velocity.y < 0)));
         animator.SetBool("IsGrounded",      player.controller.collisions.below);
         animator.SetBool("IsRunning",       (player.input.pLeft || player.input.pRight));
 

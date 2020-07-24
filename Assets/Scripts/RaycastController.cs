@@ -6,7 +6,7 @@ using UnityEngine;
 public class RaycastController : MonoBehaviour
 {
     public LayerMask colMask;
-    public const float skinWidth = .015f;
+    public float skinWidth = .015f;
 
     public int horiRayCount = 4;
     public int vertRayCount = 4;

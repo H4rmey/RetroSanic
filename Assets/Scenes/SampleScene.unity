@@ -225,6 +225,7 @@ MonoBehaviour:
   colMask:
     serializedVersion: 2
     m_Bits: 256
+  skinWidth: 0.015
   horiRayCount: 32
   vertRayCount: 32
   horiRaySpacing: 0
@@ -411,6 +412,7 @@ MonoBehaviour:
   colMask:
     serializedVersion: 2
     m_Bits: 256
+  skinWidth: 0
   horiRayCount: 30
   vertRayCount: 3
   horiRaySpacing: 0
@@ -419,7 +421,7 @@ MonoBehaviour:
   bounds:
     m_Center: {x: 0, y: 0, z: 0}
     m_Extent: {x: 0, y: 0, z: 0}
-  raycastRange: 0.3
+  raycastRange: 0.2
 --- !u!1 &158639286
 GameObject:
   m_ObjectHideFlags: 0
