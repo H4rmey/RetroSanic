@@ -78,7 +78,7 @@ public class Player : MonoBehaviour
         //set state to idle if not input is present
         if (input.pHorizontal == 0)
             state = STATE.IDLE;
-        else
+        else if (!input.pDown)
             state = STATE.WALKING;
 
         if (state != STATE.AIRBORNE && input.pDown)
@@ -86,14 +86,22 @@ public class Player : MonoBehaviour
 
         if (controller.collisions.left || controller.collisions.right)
             state = STATE.WALLSLIDING;
-
-
+        
         if (!controller.collisions.below && !controller.collisions.left && !controller.collisions.right)
             state = STATE.AIRBORNE;
 
         //get/set base parameters
         targetVelocity.x = moveSpeed * input.pHorizontal;
         smoothingFactor.x = (state == STATE.AIRBORNE) ? smoothingAirborneX : smoothingGroundedX;
+
+        //TODO: needs some extra work for stopping power
+        if (state == STATE.SLIDING)
+        {
+            targetVelocity.x = 0;
+            smoothingFactor.x = smoothingSlidingX;
+            if (velocity.x < 0.2)
+                state = STATE.IDLE;
+        }
 
         //handle that shit
         if (state == STATE.WALLSLIDING)
@@ -110,8 +118,6 @@ public class Player : MonoBehaviour
             velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocity.x, ref velocitySmoothing.x, smoothingFactor.x);
         }
 
-        if (input.pInteractPressed && !controller.collisions.below) StartCoroutine("Attack");
-
         //final checks UwU
         if (controller.collisions.above)
             velocity.y = 0;
@@ -122,12 +128,12 @@ public class Player : MonoBehaviour
         //apply to object
         controller.Move(velocity * Time.deltaTime);
 
-        Debug.Log(state);
+        //Debug.Log(state);
     }
 
     private void WallSliding()
     {
-        if (input.pJump)
+        if (input.pJumpPressed)
         {
             state = STATE.AIRBORNE;
 
@@ -163,32 +169,7 @@ public class Player : MonoBehaviour
         else
             velocity = aDirection;
     }
-
-    private IEnumerator Attack()
-    {
-        Collider2D[] targets        = Physics2D.OverlapCircleAll(transform.position, attackRange, controller.colMask);
-        Collider2D targetCollider   = GetClosestEnemy(targets);
-        Vector3 target              = targetCollider.transform.position;
-        Vector3 direction           = (target - transform.position);
-        float distance              = attackRange;
-
-        while (distance > attackContinue && targetCollider != null)
-        {
-            velocity.x = (target.x - transform.position.x) * attackForce;
-            velocity.y = (target.y - transform.position.y) * attackForce;
-
-            controller.Move(velocity * Time.deltaTime);
-
-            distance = (target - transform.position).sqrMagnitude;
-            yield return null;
-        }
-
-        Destroy(targetCollider.transform.gameObject);
-        Jump(new Vector2((target - transform.position).x * jumpForce, -(target - transform.position).y * jumpForce));
-
-        yield return null;
-    }
-
+        
     private Collider2D GetClosestEnemy(Collider2D[] aEnemies)
     {
         Collider2D bestTarget = null;
