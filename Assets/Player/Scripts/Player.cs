@@ -14,7 +14,6 @@ public class Player : MonoBehaviour
     public float    jumpHeight = 3;
     public float    jumpAccend = .4f;
 
-
     [Header("Smooth Smooth, Cha Cha")]
     public float    smoothingAirborneX = .4f;
     public float    smoothingGroundedX = .1f;
@@ -23,12 +22,9 @@ public class Player : MonoBehaviour
 
     [Header("Movement")]
     public float    moveSpeed = 10;
-    private bool    isSliding = false;
 
     [Header("WallJumping")]
     public float        wallSlideSpeed      = 3;
-    [HideInInspector]
-    public bool        isWallSliding       = false;
 
     [Header("Attacka")]
     public float        attackRange     = 10;
@@ -37,6 +33,10 @@ public class Player : MonoBehaviour
 
     private float       gravity;
     private float       jumpForce;
+
+    [Header("Attacka")]
+    private bool        slideFlag = false;
+    public float        slideThreshold = 9;
 
     private Vector2     smoothingFactor;
     private Vector2     targetVelocity;
@@ -68,67 +68,70 @@ public class Player : MonoBehaviour
 
     private void Update()
     {
-        //get the user input
+        /*------------------------GET THE INPUT------------------------*/
         input = controller.inputHandler.input;
 
         //reset set the velocity to zero. when grounded
         if (controller.collisions.below)
             velocity.y = 0;
 
+        /*------------------------SET THE STATE------------------------*/
         //set state to idle if not input is present
         if (input.pHorizontal == 0)
             state = STATE.IDLE;
         else if (!input.pDown)
             state = STATE.WALKING;
 
-        if (state != STATE.AIRBORNE && input.pDown)
+        if (state != STATE.IDLE && state != STATE.AIRBORNE && 
+            input.pDown && (Mathf.Abs(velocity.x) > slideThreshold ))
             state = STATE.SLIDING;
 
-        if (controller.collisions.left || controller.collisions.right)
+        if (!controller.collisions.below && (controller.collisions.left || controller.collisions.right))
             state = STATE.WALLSLIDING;
         
         if (!controller.collisions.below && !controller.collisions.left && !controller.collisions.right)
             state = STATE.AIRBORNE;
 
         //get/set base parameters
-        targetVelocity.x = moveSpeed * input.pHorizontal;
+
+        if (state == STATE.WALKING || state == STATE.AIRBORNE)
+            targetVelocity.x = moveSpeed * input.pHorizontal;
         smoothingFactor.x = (state == STATE.AIRBORNE) ? smoothingAirborneX : smoothingGroundedX;
 
+        /*------------------------HANDLE ALL THE STATES------------------------*/
         //TODO: needs some extra work for stopping power
         if (state == STATE.SLIDING)
         {
             targetVelocity.x = 0;
             smoothingFactor.x = smoothingSlidingX;
-            if (velocity.x < 0.2)
+            if (velocity.x > -0.2 && velocity.x < 0.2)
                 state = STATE.IDLE;
-        }
-
-        //handle that shit
-        if (state == STATE.WALLSLIDING)
-        {
+        } 
+        else if (state == STATE.WALLSLIDING)
+        { 
             WallSliding();
             velocity.y = Mathf.SmoothDamp(velocity.y, targetVelocity.y, ref velocitySmoothing.y, smoothingFactor.y);
-        }
+        }            
 
         if (state != STATE.WALLSLIDING) //DO NOT MAKE ELSE IF, WILL BREAK RELEASING FROM WALLS <:o
         {
-            if (input.pJumpPressed && surrounding.collisions.below)
+            if (input.pJumpPressed && controller.collisions.below)
                 Jump(new Vector2(0, jumpForce));
 
             velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocity.x, ref velocitySmoothing.x, smoothingFactor.x);
         }
 
-        //final checks UwU
+        /*------------------------DO THE FINAL CHECKS------------------------*/
         if (controller.collisions.above)
             velocity.y = 0;
 
         if (state != STATE.WALLSLIDING || input.pDown)
             velocity.y += gravity * Time.deltaTime;
 
-        //apply to object
+        /*------------------------APPLY THAT SPEED------------------------*/
         controller.Move(velocity * Time.deltaTime);
 
-        //Debug.Log(state);
+        Debug.Log(velocity.x);
     }
 
     private void WallSliding()
@@ -169,7 +172,12 @@ public class Player : MonoBehaviour
         else
             velocity = aDirection;
     }
-        
+
+    /// <summary>
+    /// DEPRICATED
+    /// </summary>
+    /// <param name="aEnemies"></param>
+    /// <returns></returns>
     private Collider2D GetClosestEnemy(Collider2D[] aEnemies)
     {
         Collider2D bestTarget = null;
@@ -193,9 +201,4 @@ public class Player : MonoBehaviour
         return bestTarget;
     }
 
-    void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red * 0.5f;
-        Gizmos.DrawSphere(this.transform.position, attackRange);
-    }
 }
