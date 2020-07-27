@@ -76,50 +76,55 @@ public class Player : MonoBehaviour
             velocity.y = 0;
 
         /*------------------------SET THE STATE------------------------*/
-        //set state to idle if not input is present
         if (input.pHorizontal == 0)
             state = STATE.IDLE;
-        else if (!input.pDown)
+
+        if (state != STATE.SLIDING && input.pHorizontal != 0 && controller.collisions.below)
             state = STATE.WALKING;
 
-        if (state != STATE.IDLE && state != STATE.AIRBORNE && 
-            input.pDown && (Mathf.Abs(velocity.x) > slideThreshold ))
+        if (controller.collisions.below && input.pDown)
             state = STATE.SLIDING;
 
-        if (!controller.collisions.below && (controller.collisions.left || controller.collisions.right))
+        if (state != STATE.WALKING && (controller.collisions.left || controller.collisions.right))
             state = STATE.WALLSLIDING;
-        
+
         if (!controller.collisions.below && !controller.collisions.left && !controller.collisions.right)
             state = STATE.AIRBORNE;
 
-        //get/set base parameters
-
-        if (state == STATE.WALKING || state == STATE.AIRBORNE)
-            targetVelocity.x = moveSpeed * input.pHorizontal;
-        smoothingFactor.x = (state == STATE.AIRBORNE) ? smoothingAirborneX : smoothingGroundedX;
-
         /*------------------------HANDLE ALL THE STATES------------------------*/
-        //TODO: needs some extra work for stopping power
-        if (state == STATE.SLIDING)
+        if (state == STATE.IDLE)
+        {
+            targetVelocity.x = moveSpeed * input.pHorizontal;
+
+            if (input.pJumpPressed && controller.collisions.below)
+                Jump(new Vector2(0, jumpForce));
+        }
+        else if (state == STATE.WALKING)
+        {
+            targetVelocity.x = moveSpeed * input.pHorizontal;
+            smoothingFactor.x = smoothingGroundedX;
+
+            if (input.pJumpPressed && controller.collisions.below)
+                Jump(new Vector2(0, jumpForce));
+        }
+        else if (state == STATE.SLIDING)
         {
             targetVelocity.x = 0;
             smoothingFactor.x = smoothingSlidingX;
             if (velocity.x > -0.2 && velocity.x < 0.2)
                 state = STATE.IDLE;
-        } 
-        else if (state == STATE.WALLSLIDING)
-        { 
-            WallSliding();
-            velocity.y = Mathf.SmoothDamp(velocity.y, targetVelocity.y, ref velocitySmoothing.y, smoothingFactor.y);
-        }            
-
-        if (state != STATE.WALLSLIDING) //DO NOT MAKE ELSE IF, WILL BREAK RELEASING FROM WALLS <:o
-        {
-            if (input.pJumpPressed && controller.collisions.below)
-                Jump(new Vector2(0, jumpForce));
-
-            velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocity.x, ref velocitySmoothing.x, smoothingFactor.x);
         }
+        else if (state == STATE.WALLSLIDING)
+        {
+            WallSliding();
+        }
+        else if (state == STATE.AIRBORNE)
+        {
+            targetVelocity.x = moveSpeed * input.pHorizontal;
+            smoothingFactor.x = smoothingAirborneX;
+        }
+
+        velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocity.x, ref velocitySmoothing.x, smoothingFactor.x);
 
         /*------------------------DO THE FINAL CHECKS------------------------*/
         if (controller.collisions.above)
@@ -136,10 +141,11 @@ public class Player : MonoBehaviour
 
     private void WallSliding()
     {
+        targetVelocity.x = moveSpeed * input.pHorizontal;
+        smoothingFactor.x = smoothingGroundedX;
+
         if (input.pJumpPressed)
         {
-            state = STATE.AIRBORNE;
-
             //do a jump :)
             Jump(new Vector2(jumpForce * -controller.collisions.horizontal, jumpForce));
         }
@@ -149,16 +155,20 @@ public class Player : MonoBehaviour
         {
             if (input.pRight)
                 state = STATE.AIRBORNE;
-            targetVelocity.y = (input.pLeft) ? 0.0f : -wallSlideSpeed;
+            else
+                targetVelocity.y = (input.pLeft) ? 0.0f : -wallSlideSpeed;
         }
         if (controller.collisions.right)
         {
             if (input.pLeft)
                 state = STATE.AIRBORNE;
-            targetVelocity.y    = (input.pRight) ? 0.0f : -wallSlideSpeed;
+            else
+                targetVelocity.y = (input.pRight) ? 0.0f : -wallSlideSpeed;
         }
 
-        smoothingFactor.y   = smoothingWallSlidingY;
+        smoothingFactor.y = smoothingWallSlidingY;
+
+        velocity.y = Mathf.SmoothDamp(velocity.y, targetVelocity.y, ref velocitySmoothing.y, smoothingFactor.y);
     }
 
     private void Jump(Vector2 aDirection)
@@ -171,6 +181,8 @@ public class Player : MonoBehaviour
             velocity.y = aDirection.y;
         else
             velocity = aDirection;
+
+        state = STATE.AIRBORNE;
     }
 
     /// <summary>
@@ -201,4 +213,62 @@ public class Player : MonoBehaviour
         return bestTarget;
     }
 
+    /// <summary>
+    /// DEPRICATED
+    /// </summary>
+    private void oldshit()
+    {
+        /*------------------------GET THE INPUT------------------------*/
+        input = controller.inputHandler.input;
+
+        //reset set the velocity to zero. when grounded
+        if (controller.collisions.below)
+            velocity.y = 0;
+
+        /*------------------------SET THE STATE------------------------*/
+        //set state to idle if not input is present
+        if (input.pHorizontal == 0)
+            state = STATE.IDLE;
+        else if (!input.pDown)
+            state = STATE.WALKING;
+
+        if (state != STATE.IDLE && state != STATE.AIRBORNE &&
+            input.pDown && (Mathf.Abs(velocity.x) > slideThreshold))
+            state = STATE.SLIDING;
+
+        if (!controller.collisions.below && (controller.collisions.left || controller.collisions.right))
+            state = STATE.WALLSLIDING;
+
+        if (!controller.collisions.below && !controller.collisions.left && !controller.collisions.right)
+            state = STATE.AIRBORNE;
+
+        //get/set base parameters
+
+        if (state == STATE.WALKING || state == STATE.AIRBORNE)
+            targetVelocity.x = moveSpeed * input.pHorizontal;
+        smoothingFactor.x = (state == STATE.AIRBORNE) ? smoothingAirborneX : smoothingGroundedX;
+
+        /*------------------------HANDLE ALL THE STATES------------------------*/
+        //TODO: needs some extra work for stopping power
+        if (state == STATE.SLIDING)
+        {
+            targetVelocity.x = 0;
+            smoothingFactor.x = smoothingSlidingX;
+            if (velocity.x > -0.2 && velocity.x < 0.2)
+                state = STATE.IDLE;
+        }
+        else if (state == STATE.WALLSLIDING)
+        {
+            WallSliding();
+            velocity.y = Mathf.SmoothDamp(velocity.y, targetVelocity.y, ref velocitySmoothing.y, smoothingFactor.y);
+        }
+
+        if (state != STATE.WALLSLIDING) //DO NOT MAKE ELSE IF, WILL BREAK RELEASING FROM WALLS <:o
+        {
+            if (input.pJumpPressed && controller.collisions.below)
+                Jump(new Vector2(0, jumpForce));
+
+            velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocity.x, ref velocitySmoothing.x, smoothingFactor.x);
+        }
+    }
 }
