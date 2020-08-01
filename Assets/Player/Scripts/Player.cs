@@ -24,7 +24,9 @@ public class Player : MonoBehaviour
     public float    moveSpeed = 10;
 
     [Header("WallJumping")]
-    public float        wallSlideSpeed      = 3;
+    public float        wallSlideSpeed          = 3;
+    public float        wallSlideBarDepletion   = 0.1f;
+    public float        wallReleaseForce        = 0.5f;
 
     [Header("Attacka")]
     public float        attackRange     = 10;
@@ -34,8 +36,7 @@ public class Player : MonoBehaviour
     private float       gravity;
     private float       jumpForce;
 
-    [Header("Attacka")]
-    private bool        slideFlag = false;
+    [Header("Sliding")]
     public float        slideThreshold = 9;
 
     private Vector2     smoothingFactor;
@@ -50,6 +51,7 @@ public class Player : MonoBehaviour
     public SurroundingCheck surrounding;
 
     public UnityEvent JumpTrigger;
+    public ChargeBar chargeBar;
 
     public enum STATE {WALKING, AIRBORNE, IDLE, WALLSLIDING, SLIDING};
     public STATE state = STATE.IDLE;
@@ -58,6 +60,7 @@ public class Player : MonoBehaviour
     {
         controller  = GetComponent<Controller2D>();
         surrounding = GetComponent<SurroundingCheck>();
+        chargeBar   = GetComponentInChildren<ChargeBar>();
 
         gravity     = -(2 * jumpHeight) / Mathf.Pow(jumpAccend, 2);
         jumpForce   = Mathf.Abs(gravity * jumpAccend);
@@ -75,6 +78,7 @@ public class Player : MonoBehaviour
         if (controller.collisions.below)
             velocity.y = 0;
 
+        #region STATE SETTER
         /*------------------------SET THE STATE------------------------*/
         if (input.pHorizontal == 0)
             state = STATE.IDLE;
@@ -85,34 +89,33 @@ public class Player : MonoBehaviour
         if (controller.collisions.below && input.pDown)
             state = STATE.SLIDING;
 
-        if (state != STATE.WALKING && (controller.collisions.left || controller.collisions.right))
+        if (!controller.collisions.below && (controller.collisions.left || controller.collisions.right))
             state = STATE.WALLSLIDING;
 
         if (!controller.collisions.below && !controller.collisions.left && !controller.collisions.right)
             state = STATE.AIRBORNE;
+        #endregion
 
+        #region STATE HANDLER
         /*------------------------HANDLE ALL THE STATES------------------------*/
         if (state == STATE.IDLE)
         {
             targetVelocity.x = moveSpeed * input.pHorizontal;
 
-            if (input.pJumpPressed && controller.collisions.below)
-                Jump(new Vector2(0, jumpForce));
+            TriggerJump();
         }
         else if (state == STATE.WALKING)
         {
             targetVelocity.x = moveSpeed * input.pHorizontal;
             smoothingFactor.x = smoothingGroundedX;
 
-            if (input.pJumpPressed && controller.collisions.below)
-                Jump(new Vector2(0, jumpForce));
+            TriggerJump();
         }
         else if (state == STATE.SLIDING)
         {
-            targetVelocity.x = 0;
-            smoothingFactor.x = smoothingSlidingX;
-            if (velocity.x > -0.2 && velocity.x < 0.2)
-                state = STATE.IDLE;
+            Slide();
+
+            TriggerJump();
         }
         else if (state == STATE.WALLSLIDING)
         {
@@ -123,6 +126,7 @@ public class Player : MonoBehaviour
             targetVelocity.x = moveSpeed * input.pHorizontal;
             smoothingFactor.x = smoothingAirborneX;
         }
+        #endregion
 
         velocity.x = Mathf.SmoothDamp(velocity.x, targetVelocity.x, ref velocitySmoothing.x, smoothingFactor.x);
 
@@ -135,33 +139,43 @@ public class Player : MonoBehaviour
 
         /*------------------------APPLY THAT SPEED------------------------*/
         controller.Move(velocity * Time.deltaTime);
-
-        Debug.Log(velocity.x);
+        //Debug.Log(chargeBar.charges);
+        Debug.Log(state);
+        //Debug.Log(velocity.x);
     }
 
     private void WallSliding()
     {
+        chargeBar.AddToBar(-wallSlideBarDepletion * Time.deltaTime);
+
+        if (chargeBar.charges < 0)
+        {
+            Jump(new Vector2(wallReleaseForce * -controller.collisions.horizontal, 0));
+            return;
+        }
+
         targetVelocity.x = moveSpeed * input.pHorizontal;
         smoothingFactor.x = smoothingGroundedX;
-
+        
         if (input.pJumpPressed)
         {
             //do a jump :)
             Jump(new Vector2(jumpForce * -controller.collisions.horizontal, jumpForce));
+            JumpTrigger.Invoke();
         }
 
         //release from walls
         if (controller.collisions.left)
         {
             if (input.pRight)
-                state = STATE.AIRBORNE;
+                Jump(new Vector2(wallReleaseForce * -controller.collisions.horizontal, 0));
             else
                 targetVelocity.y = (input.pLeft) ? 0.0f : -wallSlideSpeed;
         }
         if (controller.collisions.right)
         {
             if (input.pLeft)
-                state = STATE.AIRBORNE;
+                Jump(new Vector2(wallReleaseForce * -controller.collisions.horizontal, 0));
             else
                 targetVelocity.y = (input.pRight) ? 0.0f : -wallSlideSpeed;
         }
@@ -172,9 +186,7 @@ public class Player : MonoBehaviour
     }
 
     private void Jump(Vector2 aDirection)
-    {
-        JumpTrigger.Invoke();
-
+    {        
         if (aDirection.y == 0 && aDirection.x != 0)
             velocity.x = aDirection.x;
         else if (aDirection.x == 0 && aDirection.y != 0)
@@ -183,6 +195,25 @@ public class Player : MonoBehaviour
             velocity = aDirection;
 
         state = STATE.AIRBORNE;
+    }
+
+    private void TriggerJump()
+    {
+        if (input.pJumpPressed && controller.collisions.below && (chargeBar.charges >= 0))
+        {
+            Jump(new Vector2(0, jumpForce));
+            JumpTrigger.Invoke();
+        }
+    }
+
+    private void Slide()
+    {
+        chargeBar.AddToBar(Time.deltaTime);
+
+        targetVelocity.x = 0;
+        smoothingFactor.x = smoothingSlidingX;
+        if (velocity.x > -0.5 && velocity.x < 0.5)
+            velocity.x = 0;
     }
 
     /// <summary>

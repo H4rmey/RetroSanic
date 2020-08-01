@@ -62,8 +62,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\ChargeBar.cs" />
     <Compile Include="Assets\Enemies\GenericEnemy.cs" />
+    <Compile Include="Assets\Player\Scripts\ChargeBar.cs" />
     <Compile Include="Assets\Player\Scripts\InputHandler.cs" />
     <Compile Include="Assets\Player\Scripts\Player.cs" />
     <Compile Include="Assets\Player\Scripts\PlayerAnimationHandler.cs" />

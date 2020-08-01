@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class PlayerAnimationHandler : MonoBehaviour
 {
-    private Player      player;
-    private Animator    animator;
+    private Player          player;
+    private Animator        animator;
 
     private int faceDirection, faceDirectionOld;
 
@@ -22,15 +22,19 @@ public class PlayerAnimationHandler : MonoBehaviour
     {
         int direction = player.input.pHorizontal;
 
+        player.GetComponent<SpriteRenderer>().flipX = (direction < 0);
+                
         if (player.input.pHorizontal == 0)
             direction = faceDirectionOld;
-        player.transform.localScale = new Vector3(direction, 1, 1);
+        //player.transform.localScale = new Vector3(direction, 1, 1);
 
-        animator.SetBool("IsWallSliding",   player.state == Player.STATE.WALLSLIDING && !player.controller.collisions.below);
+        animator.SetBool("IsWallSliding",   player.state == Player.STATE.WALLSLIDING);
         animator.SetBool("IsAirBorne",      (player.state == Player.STATE.AIRBORNE && (player.velocity.y < 0)));
         animator.SetBool("IsGrounded",      player.controller.collisions.below);
         animator.SetBool("IsRunning",       player.state != Player.STATE.SLIDING && (player.input.pLeft || player.input.pRight));
         animator.SetBool("isSliding",       player.state == Player.STATE.SLIDING);
+
+        //Debug.Log(player.state == Player.STATE.SLIDING);
 
 
         faceDirectionOld = direction;
