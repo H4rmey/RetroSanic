@@ -42,3 +42,12 @@ The following packages were updated:
   com.unity.ide.vscode from version 1.1.2 to 1.2.1
   com.unity.test-framework from version 1.1.2 to 1.1.14
   com.unity.timeline from version 1.2.2 to 1.2.6
+
+=== Sun Sep  6 17:30:10 2020
+
+Packages were changed.
+Update Mode: updateDependencies
+
+The following packages were updated:
+  com.unity.ads from version 3.4.5 to 3.4.7
+  com.unity.test-framework from version 1.1.14 to 1.1.16
